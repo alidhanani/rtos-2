@@ -27,6 +27,8 @@ void GameMaster();
 void GameMaster() {
     int ArrayOfGameMaster[4] = {0};
     int actualCount[9] = {0};
+    int counterPerfect  =  0;
+    int counterGuess = 0;
     for(int i = 0; i < 4; i++) {
         int color = rand()  % 9;
         ArrayOfGameMaster[i] = color;
@@ -36,17 +38,13 @@ void GameMaster() {
         printf("%d ", ArrayOfGameMaster[i]);
     }
     
-    while(1) {
-        int counterPerfect  =  0;
-        int counterGuess = 0;
+    while(counterPerfect != 4) {
+        counterPerfect  =  0;
+        counterGuess = 0;
         int ArrayOfGameUser[4] = {0};
         for(int i = 0; i < 4; i++) {
-            int guess;
-            printf("Enter %d colour: ", i);
-            cin >> guess;
-            ArrayOfGameUser[i] = guess;
+            ArrayOfGameUser[i] = rand()  % 9;
         }
-        
         int guessCount[9] = {0};  
         for(int i = 0; i < 4; i++) {
             if(ArrayOfGameMaster[i] == ArrayOfGameUser[i]) {
@@ -59,7 +57,7 @@ void GameMaster() {
             counterGuess += std::min(actualCount[i], guessCount[i]);
         }
         counterGuess -= counterPerfect;
-        printf("Perfect: %d Colour Only: %d", counterPerfect, counterGuess);
+        printf("\nPerfect: %d Colour Only: %d", counterPerfect, counterGuess);
     }
     
 }
