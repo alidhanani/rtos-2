@@ -1,0 +1,7 @@
+default.nix
+project_2.pdf
+build/
+dist/
+.dep.inc
+nbproject/private
+*~
