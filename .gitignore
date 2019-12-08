@@ -2,3 +2,4 @@ default.nix
 project_2.pdf
 mastermind
 *~
+*.o
