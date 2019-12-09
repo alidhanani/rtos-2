@@ -18,7 +18,6 @@ bool Guesser::is_plausible_guess(const std::vector<unsigned char> proposed_guess
   return true;
 }
 
-// TODO: Merge with GameMaster::evaluate_guess ?
 bool Guesser::is_plausible_guess(const guess guess, const std::vector<unsigned char> proposed_guess) {
   util::response response = util::compare_color_sequences(guess.color_sequence, proposed_guess, number_colors);
   return response.perfect == guess.r.perfect
