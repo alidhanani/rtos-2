@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "util.h"
+#include "colorsequence.h"
 
 TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
   const std::vector<unsigned char>& seq1 = {0,1,1,2,3};
@@ -24,5 +25,25 @@ TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
     util::response r = util::compare_color_sequences(seq1, seq2, num_colors);
     REQUIRE(r.perfect == 1);
     REQUIRE(r.color_only == 1);
+  }
+}
+
+TEST_CASE("Test color sequence addition", "[ColorSequence::operator+]") {
+  SECTION("Simple addition") {
+    ColorSequence seq {2, std::vector<unsigned char> {0, 0, 0}};
+    std::optional<ColorSequence> res = seq + 1;
+    REQUIRE(res.value().seq == std::vector<unsigned char> {1, 0, 0});
+  }
+
+  SECTION("overflow") {
+    ColorSequence seq {2, std::vector<unsigned char> {1, 1, 1}};
+    std::optional<ColorSequence> res = seq + 1;
+    REQUIRE(res.has_value() == false);
+  }
+
+  SECTION("addition with carry") {
+    ColorSequence seq {2, std::vector<unsigned char> {0, 1, 1}};
+    std::optional<ColorSequence> res = seq + 1;
+    REQUIRE(res.value().seq == std::vector<unsigned char> {1, 1, 1});
   }
 }

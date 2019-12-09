@@ -1,11 +1,11 @@
 CXX = mpiCC
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g -std=c++17
 
-SRCS = main.cpp gamemaster.cpp guesser.cpp util.cpp
+SRCS = gamemaster.cpp guesser.cpp util.cpp colorsequence.cpp
 OBJS = $(subst .cpp,.o,$(SRCS))
 
-build: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o mastermind $(OBJS)
+build: main.o $(OBJS)
+	$(CXX) $(CXXFLAGS) -o mastermind main.o $(OBJS)
 
 main.o: main.cpp gamemaster.h
 
@@ -15,11 +15,13 @@ guesser.o: guesser.h util.h
 
 util.o: util.h
 
-clean:
-	rm $(OBJS) mastermind tests
+colorsequence.o: colorsequence.h
 
-tests: tests.o gamemaster.o guesser.o
-	$(CXX) $(CXXFLAGS) -o tests tests.o gamemaster.o util.o
+clean:
+	rm $(OBJS) main.o tests.o mastermind tests
+
+tests: tests.o $(OBJS)
+	$(CXX) $(CXXFLAGS) -o tests tests.o $(OBJS)
 	./tests
 
 tests.o: tests.cpp catch.hpp
