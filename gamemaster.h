@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 struct response {
   int perfect;
@@ -8,13 +9,11 @@ struct response {
 class GameMaster {
  public:
   static GameMaster with_random_solution(int, unsigned char);
-  static GameMaster with_solution(unsigned char*, int, unsigned char);
+  static GameMaster with_solution(std::vector<unsigned char>, unsigned char);
   std::string pretty_print_solution();
-  response evaluate_guess(const unsigned char*);
+  response evaluate_guess(const std::vector<unsigned char>&);
  private:
-  GameMaster(unsigned char*,int,unsigned char,int*);
-  const unsigned char* solution;
-  const int num_spaces;
-  const unsigned char num_colors;
-  const int* color_count;
+  GameMaster(std::vector<unsigned char>,std::vector<int>);
+  const std::vector<unsigned char> solution;
+  const std::vector<int> color_count;
 };
