@@ -1,28 +1,27 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "util.h"
 #include "colorsequence.h"
 
 TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
-  const std::vector<unsigned char>& seq1 = {0,1,1,2,3};
-  unsigned int num_colors = 5;
+  const unsigned char num_colors = 5;
+  const ColorSequence seq1 {num_colors, std::vector<unsigned char> {0,1,1,2,3}};
 
   SECTION("Perfect guess") {
-    util::response r = util::compare_color_sequences(seq1, seq1, num_colors);
+    util::response r = ColorSequence::compare(seq1, seq1);
     REQUIRE(r.perfect == 5);
     REQUIRE(r.color_only == 0);
   }
-
+  
   SECTION("Bad guess") {
-    const std::vector<unsigned char>& seq2 = {4,4,4,4,4};
-    util::response r = util::compare_color_sequences(seq1, seq2, num_colors);
+    const ColorSequence seq2 {num_colors, std::vector<unsigned char> {4,4,4,4,4}};
+    util::response r = ColorSequence::compare(seq1, seq2);
     REQUIRE(r.perfect == 0);
     REQUIRE(r.color_only == 0);
   }
 
   SECTION("Ok guess") {
-    const std::vector<unsigned char>& seq2 = {0,4,4,4,1};
-    util::response r = util::compare_color_sequences(seq1, seq2, num_colors);
+    const ColorSequence seq2 {num_colors, std::vector<unsigned char> {0,4,4,4,1}};
+    util::response r = ColorSequence::compare(seq1, seq2);
     REQUIRE(r.perfect == 1);
     REQUIRE(r.color_only == 1);
   }

@@ -9,13 +9,13 @@ build: main.o $(OBJS)
 
 main.o: main.cpp gamemaster.h
 
-gamemaster.o: gamemaster.h util.h
+gamemaster.o: gamemaster.h colorsequence.h
 
-guesser.o: guesser.h util.h
+guesser.o: guesser.h colorsequence.h
 
 util.o: util.h
 
-colorsequence.o: colorsequence.h
+colorsequence.o: colorsequence.h util.h
 
 clean:
 	rm $(OBJS) main.o tests.o mastermind tests

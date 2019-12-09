@@ -26,3 +26,35 @@ std::optional<ColorSequence> ColorSequence::operator+(unsigned int incr) {
   }
   return ColorSequence {number_colors, new_seq};
 }
+
+
+util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequence& seq2) {
+  if (seq1.seq.size() != seq2.seq.size()) {
+    throw std::runtime_error("Cannot compare color sequences of different sizes");
+  }
+
+  if (seq1.number_colors != seq2.number_colors) {
+    throw std::runtime_error("Cannot compare color sequences with different colors");
+  }
+  
+  int perfect = 0;
+  int color_only = 0;
+  unsigned char num_colors = seq1.number_colors;
+  unsigned int seq_length = seq1.seq.size();
+  std::vector<unsigned int> color_count_seq1(num_colors, 0);
+  std::vector<unsigned int> color_count_seq2(num_colors, 0);
+  for (unsigned int i = 0; i < seq_length; i++) {
+    if (seq1.seq[i] == seq2.seq[i]) {
+      perfect++;
+    }
+    color_count_seq1[seq1.seq[i]]++;
+    color_count_seq2[seq2.seq[i]]++;
+  }
+  
+  for (unsigned int i = 0; i < num_colors; i++) {
+    color_only += std::min(color_count_seq1[i], color_count_seq2[i]);
+  }
+  
+  color_only -= perfect;
+  return util::response {perfect, color_only}; 
+}

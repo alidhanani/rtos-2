@@ -1,14 +1,13 @@
 #include <string>
 #include <vector>
-#include "util.h"
+#include "colorsequence.h"
 
 class GameMaster {
 public:
   static GameMaster with_random_solution(unsigned int, unsigned char);
-  GameMaster(util::color_seq,unsigned int);
+  GameMaster(ColorSequence);
   std::string pretty_print_solution();
-  util::response evaluate_guess(const util::color_seq&);
+  util::response evaluate_guess(const ColorSequence&);
  private:
-  const util::color_seq solution;
-  const unsigned int num_colors;
+  const ColorSequence solution;
 };
