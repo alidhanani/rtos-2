@@ -13,7 +13,7 @@ class GameMaster {
   std::string pretty_print_solution();
   response evaluate_guess(const std::vector<unsigned char>&);
  private:
-  GameMaster(std::vector<unsigned char>,std::vector<int>);
+  GameMaster(std::vector<unsigned char>,std::vector<unsigned int>);
   const std::vector<unsigned char> solution;
-  const std::vector<int> color_count;
+  const std::vector<unsigned int> color_count;
 };

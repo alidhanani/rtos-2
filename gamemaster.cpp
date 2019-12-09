@@ -14,7 +14,7 @@ GameMaster GameMaster::with_random_solution(int num_spaces, unsigned char num_co
 }
 
 GameMaster GameMaster::with_solution(std::vector<unsigned char> solution, unsigned char num_colors) {
-  std::vector<int> color_count(num_colors, 0);
+  std::vector<unsigned int> color_count(num_colors, 0);
   for (const unsigned char color : solution) {
     color_count[color]++;
   }
@@ -22,7 +22,7 @@ GameMaster GameMaster::with_solution(std::vector<unsigned char> solution, unsign
 }
 
 
-GameMaster::GameMaster(std::vector<unsigned char> sol, std::vector<int> col_count)
+GameMaster::GameMaster(std::vector<unsigned char> sol, std::vector<unsigned int> col_count)
   :solution(sol), color_count(col_count) {}
 
 std::string GameMaster::pretty_print_solution() {
@@ -41,7 +41,7 @@ response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
   
   int perfect = 0;
   int color_only = 0;
-  std::vector<int> color_count_guess(color_count.size(), 0);
+  std::vector<unsigned int> color_count_guess(color_count.size(), 0);
   for (unsigned int i = 0; i < solution.size(); i++) {
     if (guess[i] == solution[i]) {
       perfect++;

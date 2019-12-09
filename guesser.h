@@ -1,17 +1,22 @@
 #include "gamemaster.h"
 
 struct guess {
-  std::vector<unsigned char> color_sequence;
-  response r;
+  const std::vector<unsigned char> color_sequence;
+  const response r;
 };
 
 class Guesser {
  public:
-  void report_guess(guess);
-  Guesser(unsigned int,unsigned int); 
+  // TODO: Rather than having all of the guessers use their own previous_guesses vec
+  // they could simply all read from the same one
+  void report_guess(const guess);
+  Guesser(unsigned int,unsigned int, unsigned char, unsigned int); 
  private:
-  unsigned int id;
-  unsigned int number_nodes;
+  const unsigned int id;
+  const unsigned int number_nodes;
   std::vector<guess> previous_guesses;
-  bool is_plausible_guess(std::vector<unsigned char>);
+  const unsigned char number_colors;
+  const unsigned int number_spaces;
+  bool is_plausible_guess(const std::vector<unsigned char>);
+  bool is_plausible_guess(const guess, const std::vector<unsigned char>);
 };
