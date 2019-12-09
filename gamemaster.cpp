@@ -1,6 +1,7 @@
 #include <random>
 #include <time.h>
 #include <string>
+#include <stdexcept>
 #include "gamemaster.h"
 
 GameMaster GameMaster::with_random_solution(int num_spaces, unsigned char num_colors) {
@@ -34,7 +35,9 @@ std::string GameMaster::pretty_print_solution() {
 }
 
 response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
-  // TODO: Check that guess has correct size
+  if (guess.size() != solution.size()) {
+    throw std::runtime_error("GameMaster::evaluate_guess called with guess of incorrect size");
+  }
   
   int perfect = 0;
   int color_only = 0;

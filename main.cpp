@@ -2,10 +2,16 @@
 #include "gamemaster.h"
 
 int main(int argc, char** argv) {
-  GameMaster master = GameMaster::with_random_solution(10,10);
-  std::cout << "Master using solution: " << master.pretty_print_solution();
-  std::vector<unsigned char> guess = {0,1,2,3,4,5,6,7,8,9};
-  master.evaluate_guess(guess);
+  try {
+    GameMaster master = GameMaster::with_random_solution(10,10);
+    std::cout << "Master using solution: " << master.pretty_print_solution() << "\n";
+    std::vector<unsigned char> guess = {0,1,2,3,4,5,6,7,8,9};
+    master.evaluate_guess(guess);
+  } catch (const std::runtime_error& error) {
+    std::cout << "Received unexpected error:\n";
+    std::cout << error.what();
+    return 1;
+  }
   return 0;
 }
 
