@@ -3,17 +3,23 @@
 #include <string>
 #include "gamemaster.h"
 
-GameMaster GameMaster::random_solution(int num_spaces, unsigned char num_colors) {
+GameMaster GameMaster::with_random_solution(int num_spaces, unsigned char num_colors) {
   srand(time(0));
   unsigned char solution[num_spaces];
+  for (int i = 0; i < num_spaces; i++) {
+    solution[i] = rand() % num_colors;
+  }
+  return GameMaster::with_solution(solution, num_spaces, num_colors);
+}
+
+GameMaster GameMaster::with_solution(unsigned char* solution, int num_spaces, unsigned char num_colors) {
   int color_count[num_colors] = {0};
   for (int i = 0; i < num_spaces; i++) {
-    unsigned char color = rand() % num_colors;
-    solution[i] = rand() % num_colors;
-    color_count[color]++;
+    color_count[solution[i]]++;
   }
   return GameMaster {solution, num_spaces, num_colors, color_count};
 }
+
 
 GameMaster::GameMaster(unsigned char* sol, int ns, unsigned char nc, int* col_count)
   :solution(sol), num_spaces(ns), num_colors(nc), color_count(col_count) {}
