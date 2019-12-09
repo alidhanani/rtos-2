@@ -1,8 +1,9 @@
-#include "gamemaster.h"
+#include <vector>
+#include "util.h"
 
 struct guess {
   const std::vector<unsigned char> color_sequence;
-  const response r;
+  const util::response r;
 };
 
 class Guesser {

@@ -34,7 +34,7 @@ std::string GameMaster::pretty_print_solution() {
   return solution_string;
 }
 
-response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
+util::response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
   if (guess.size() != solution.size()) {
     throw std::runtime_error("GameMaster::evaluate_guess called with guess of incorrect size");
   }
@@ -52,5 +52,5 @@ response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
     color_only += std::min(color_count[i], color_count_guess[i]);
   }
   color_only -= perfect;
-  return response {perfect, color_only};
+  return util::response {perfect, color_only};
 }
