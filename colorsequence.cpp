@@ -45,8 +45,8 @@ util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequ
     throw std::runtime_error("Cannot compare color sequences with different colors");
   }
   
-  int perfect = 0;
-  int color_only = 0;
+  unsigned int perfect = 0;
+  unsigned int color_only = 0;
   unsigned char num_colors = seq1.number_colors;
   unsigned int seq_length = seq1.seq.size();
   std::vector<unsigned int> color_count_seq1(num_colors, 0);
