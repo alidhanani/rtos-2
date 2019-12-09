@@ -3,7 +3,7 @@
 #include <string>
 #include "gamemaster.h"
 
-GameMaster* GameMaster::random_solution(int num_spaces, unsigned char num_colors) {
+GameMaster GameMaster::random_solution(int num_spaces, unsigned char num_colors) {
   srand(time(0));
   unsigned char solution[num_spaces];
   int color_count[num_colors] = {0};
@@ -12,7 +12,7 @@ GameMaster* GameMaster::random_solution(int num_spaces, unsigned char num_colors
     solution[i] = rand() % num_colors;
     color_count[color]++;
   }
-  return new GameMaster(solution, num_spaces, num_colors, color_count);
+  return GameMaster {solution, num_spaces, num_colors, color_count};
 }
 
 GameMaster::GameMaster(unsigned char* sol, int ns, unsigned char nc, int* col_count)
