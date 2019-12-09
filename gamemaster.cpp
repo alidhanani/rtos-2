@@ -24,6 +24,6 @@ std::string GameMaster::pretty_print_solution() {
   return solution_string;
 }
 
-util::response GameMaster::evaluate_guess(std::vector<unsigned char> guess) {
+util::response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
   return util::compare_color_sequences(guess, solution, num_colors);
 }

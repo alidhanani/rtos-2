@@ -6,5 +6,5 @@ namespace util {
     int color_only;
   };
   
-  response compare_color_sequences(std::vector<unsigned char>, std::vector<unsigned char>, unsigned int);
+  response compare_color_sequences(const std::vector<unsigned char>&, const std::vector<unsigned char>&, unsigned int);
 }

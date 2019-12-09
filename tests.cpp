@@ -3,7 +3,7 @@
 #include "util.h"
 
 TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
-  std::vector<unsigned char> seq1 = {0,1,1,2,3};
+  const std::vector<unsigned char>& seq1 = {0,1,1,2,3};
   unsigned int num_colors = 5;
 
   SECTION("Perfect guess") {
@@ -13,14 +13,14 @@ TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
   }
 
   SECTION("Bad guess") {
-    std::vector<unsigned char> seq2 = {4,4,4,4,4};
+    const std::vector<unsigned char>& seq2 = {4,4,4,4,4};
     util::response r = util::compare_color_sequences(seq1, seq2, num_colors);
     REQUIRE(r.perfect == 0);
     REQUIRE(r.color_only == 0);
   }
 
   SECTION("Ok guess") {
-    std::vector<unsigned char> seq2 = {0,4,4,4,1};
+    const std::vector<unsigned char>& seq2 = {0,4,4,4,1};
     util::response r = util::compare_color_sequences(seq1, seq2, num_colors);
     REQUIRE(r.perfect == 1);
     REQUIRE(r.color_only == 1);
