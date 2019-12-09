@@ -3,7 +3,7 @@
 
 namespace util {
   
-  response compare_color_sequences(const std::vector<unsigned char>& seq1, const std::vector<unsigned char>& seq2, unsigned int num_colors) {
+  response compare_color_sequences(const color_seq& seq1, const color_seq& seq2, unsigned int num_colors) {
     if (seq1.size() != seq2.size()) {
       throw std::runtime_error("Cannot compare color sequences of different sizes");
     }

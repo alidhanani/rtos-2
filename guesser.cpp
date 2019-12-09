@@ -9,7 +9,7 @@ void Guesser::report_guess(const guess guess) {
   previous_guesses.push_back(guess);
 }
 
-bool Guesser::is_plausible_guess(const std::vector<unsigned char> proposed_guess) {
+bool Guesser::is_plausible_guess(const util::color_seq proposed_guess) {
   for (const guess guess : previous_guesses) {
     if (!is_plausible_guess(guess, proposed_guess)) {
       return false;
@@ -18,7 +18,7 @@ bool Guesser::is_plausible_guess(const std::vector<unsigned char> proposed_guess
   return true;
 }
 
-bool Guesser::is_plausible_guess(const guess guess, const std::vector<unsigned char> proposed_guess) {
+bool Guesser::is_plausible_guess(const guess guess, const util::color_seq proposed_guess) {
   util::response response = util::compare_color_sequences(guess.color_sequence, proposed_guess, number_colors);
   return response.perfect == guess.r.perfect
     && response.color_only == guess.r.color_only;

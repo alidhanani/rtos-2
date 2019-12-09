@@ -5,10 +5,10 @@
 class GameMaster {
 public:
   static GameMaster with_random_solution(unsigned int, unsigned char);
-  GameMaster(std::vector<unsigned char>,unsigned int);
+  GameMaster(util::color_seq,unsigned int);
   std::string pretty_print_solution();
-  util::response evaluate_guess(const std::vector<unsigned char>&);
+  util::response evaluate_guess(const util::color_seq&);
  private:
-  const std::vector<unsigned char> solution;
+  const util::color_seq solution;
   const unsigned int num_colors;
 };

@@ -2,7 +2,7 @@
 #include "util.h"
 
 struct guess {
-  const std::vector<unsigned char> color_sequence;
+  const util::color_seq color_sequence;
   const util::response r;
 };
 
@@ -18,6 +18,6 @@ class Guesser {
   std::vector<guess> previous_guesses;
   const unsigned char number_colors;
   const unsigned int number_spaces;
-  bool is_plausible_guess(const std::vector<unsigned char>);
-  bool is_plausible_guess(const guess, const std::vector<unsigned char>);
+  bool is_plausible_guess(const util::color_seq);
+  bool is_plausible_guess(const guess, const util::color_seq);
 };

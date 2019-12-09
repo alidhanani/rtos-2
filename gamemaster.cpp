@@ -5,7 +5,7 @@
 
 GameMaster GameMaster::with_random_solution(unsigned int num_spaces, unsigned char num_colors) {
   srand(time(0));
-  std::vector<unsigned char> solution(num_spaces);
+  util::color_seq solution(num_spaces);
   for (unsigned int i = 0; i < num_spaces; i++) {
     solution[i] = rand() % num_colors;
   }
@@ -24,6 +24,6 @@ std::string GameMaster::pretty_print_solution() {
   return solution_string;
 }
 
-util::response GameMaster::evaluate_guess(const std::vector<unsigned char>& guess) {
+util::response GameMaster::evaluate_guess(const util::color_seq& guess) {
   return util::compare_color_sequences(guess, solution, num_colors);
 }
