@@ -27,6 +27,14 @@ std::optional<ColorSequence> ColorSequence::operator+(unsigned int incr) {
   return ColorSequence {number_colors, new_seq};
 }
 
+std::string ColorSequence::pretty_print() const {
+  std::string solution_string;
+  for (const unsigned char color : seq) {
+    // We add 97 so that each color is represented by an ASCII letter
+    solution_string += color + 97;
+  }
+  return solution_string;
+}
 
 util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequence& seq2) {
   if (seq1.seq.size() != seq2.seq.size()) {

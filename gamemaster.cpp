@@ -14,15 +14,6 @@ GameMaster GameMaster::with_random_solution(unsigned int num_spaces, unsigned ch
 
 GameMaster::GameMaster(ColorSequence solution) :solution(solution) {}
 
-std::string GameMaster::pretty_print_solution() {
-  std::string solution_string;
-  for (const unsigned char color : solution.seq) {
-    // We add 97 so that each color is represented by an ASCII letter
-    solution_string += color + 97;
-  }
-  return solution_string;
-}
-
 util::response GameMaster::evaluate_guess(const ColorSequence& guess) {
   return ColorSequence::compare(guess, solution);
 }
