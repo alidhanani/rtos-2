@@ -1,8 +1,8 @@
 CXX = mpiCC
 CXXFLAGS = -Wall -g
 
-SRCS = main.cc gamemaster.cc guesser.cpp util.cpp
-OBJS = $(subst .cc,.o,$(SRCS))
+SRCS = main.cpp gamemaster.cpp guesser.cpp util.cpp
+OBJS = $(subst .cpp,.o,$(SRCS))
 
 build: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o mastermind $(OBJS)
