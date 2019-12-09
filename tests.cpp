@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "colorsequence.h"
+#include "guesser.h"
 
 TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
   const unsigned char num_colors = 5;
@@ -44,5 +44,17 @@ TEST_CASE("Test color sequence addition", "[ColorSequence::operator+]") {
     ColorSequence seq {2, std::vector<unsigned char> {0, 1, 1}};
     std::optional<ColorSequence> res = seq + 1;
     REQUIRE(res.value().seq == std::vector<unsigned char> {1, 1, 1});
+  }
+}
+
+TEST_CASE("Test guess generation", "[Guesser::generate_plausible_guess]") {
+  SECTION("No previous guesses") {
+    Guesser guesser {0, 2, 2, 3};
+    std::vector<unsigned char> expected {0, 0, 0};
+    REQUIRE(guesser.generate_plausible_guess().value().seq == expected);
+
+    // There are 2 nodes and 2 colors, so we should increment accordingly
+    std::vector<unsigned char> expected2 {0, 1, 0};
+    REQUIRE(guesser.generate_plausible_guess().value().seq == expected2);
   }
 }

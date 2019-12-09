@@ -18,8 +18,15 @@ std::optional<ColorSequence> Guesser::generate_plausible_guess() {
   while (current_guess.has_value() && !is_plausible_guess(current_guess.value())) {
     current_guess = (current_guess.value() + number_nodes);
   }
+  std::optional<ColorSequence> guess = current_guess;
+  
+  if (current_guess.has_value()) {
+    // move to the next value, so we don't keep returning the old one.
+    // There is probably a better way to do this.
+    current_guess = (current_guess.value() + number_nodes);
+  }
 
-  return current_guess;
+  return guess;
 }
 
 bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
