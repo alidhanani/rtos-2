@@ -8,8 +8,6 @@ struct guess {
 
 class Guesser {
  public:
-  // TODO: Rather than having all of the guessers use their own previous_guesses vec
-  // they could simply all read from the same one
   void report_guess(const guess);
   Guesser(unsigned int,unsigned int, unsigned char, unsigned int); 
  private:
