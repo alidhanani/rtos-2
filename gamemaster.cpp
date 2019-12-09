@@ -14,7 +14,7 @@ GameMaster GameMaster::with_random_solution(int num_spaces, unsigned char num_co
 
 GameMaster GameMaster::with_solution(unsigned char* solution, int num_spaces, unsigned char num_colors) {
   int color_count[num_colors] = {0};
-  for (int i = 0; i < num_spaces; i++) {
+  for (int i = 0; i < num_colors; i++) {
     color_count[solution[i]]++;
   }
   return GameMaster {solution, num_spaces, num_colors, color_count};

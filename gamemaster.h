@@ -10,7 +10,7 @@ class GameMaster {
   static GameMaster with_random_solution(int, unsigned char);
   static GameMaster with_solution(unsigned char*, int, unsigned char);
   std::string pretty_print_solution();
-  response evaluate_guess(const unsigned char[]);
+  response evaluate_guess(const unsigned char*);
  private:
   GameMaster(unsigned char*,int,unsigned char,int*);
   const unsigned char* solution;

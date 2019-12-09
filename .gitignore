@@ -1,5 +1,6 @@
 default.nix
 project_2.pdf
 mastermind
+tests
 *~
 *.o
