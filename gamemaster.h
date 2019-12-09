@@ -4,12 +4,11 @@
 
 class GameMaster {
  public:
-  static GameMaster with_random_solution(int, unsigned char);
-  static GameMaster with_solution(std::vector<unsigned char>, unsigned char);
+  static GameMaster with_random_solution(unsigned int, unsigned char);
+  GameMaster(std::vector<unsigned char>,unsigned int);
   std::string pretty_print_solution();
-  util::response evaluate_guess(const std::vector<unsigned char>&);
+  util::response evaluate_guess(std::vector<unsigned char>);
  private:
-  GameMaster(std::vector<unsigned char>,std::vector<unsigned int>);
   const std::vector<unsigned char> solution;
-  const std::vector<unsigned int> color_count;
+  const unsigned int num_colors;
 };
