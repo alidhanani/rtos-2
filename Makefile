@@ -4,6 +4,8 @@ CXXFLAGS = -Wall -g -std=c++17
 SRCS = gamemaster.cpp guesser.cpp util.cpp colorsequence.cpp
 OBJS = $(subst .cpp,.o,$(SRCS))
 
+all: tests build
+
 build: main.o $(OBJS)
 	$(CXX) $(CXXFLAGS) -o mastermind main.o $(OBJS)
 

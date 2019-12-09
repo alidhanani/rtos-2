@@ -2,11 +2,8 @@
 
 Build and run with:
 ```
-make build
+make
 ./mastermind
 ```
 
-Tests are run using [Catch](https://github.com/catchorg/Catch2). Simply run:
-```
-make tests
-```
+Tests are run using [Catch](https://github.com/catchorg/Catch2).
