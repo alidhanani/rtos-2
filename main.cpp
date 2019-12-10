@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
     int val;
     if (global_rank == 0) {
       // change rank of root in group a to 1?
-      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
-    } else if (global_rank == 1) {
       val = 100;
       MPI_Bcast(&val, 1, MPI_INT, MPI_ROOT, inter_comm);
+    } else if (global_rank == 1) {
+      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
     } else {
-      MPI_Bcast(&val, 1, MPI_INT, MPI_PROC_NULL, inter_comm);
+      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
     }
 
     std::cout << "Global rank: " << global_rank << " val: " << val << "\n";
