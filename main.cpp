@@ -1,9 +1,14 @@
+#include <mpi.h>
 #include <iostream>
 #include "gamemaster.h"
 #include "guesser.h"
 
 int main(int argc, char** argv) {
   try {
+    if (MPI_SUCCESS != MPI_Init(&argc, &argv)) {
+      throw std::runtime_error("Unable to init mpi");
+    }
+    
     unsigned char number_colors = 2;
     unsigned int number_spaces = 4;
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
