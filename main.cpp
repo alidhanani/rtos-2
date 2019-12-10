@@ -15,26 +15,48 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
 
     int color;
-    MPI_Comm comm;
+    MPI_Comm intra_comm;
     if (global_rank == 0) {
       // This is the master node
       color = 0;
-      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &comm);
+      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &intra_comm);
     } else {
       color = 1;
-      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &comm);
+      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &intra_comm);
     }
     int local_rank;
     int local_num_processes;
-    MPI_Comm_rank(comm, &local_rank);
-    MPI_Comm_size(comm, &local_num_processes);
+    MPI_Comm_rank(intra_comm, &local_rank);
+    MPI_Comm_size(intra_comm, &local_num_processes);
     std::cout << "Cool -"
               << " Global rank: " << global_rank
               << " Global num processes: " << global_num_processes
               << " local rank: " << local_rank
               << " local num processes: " << local_num_processes
               << "\n";
-    MPI_Comm_free(&comm);
+
+    MPI_Comm inter_comm;
+    if (global_rank == 0) {
+      MPI_Intercomm_create(intra_comm, 0, MPI_COMM_WORLD, 1, 0, &inter_comm);
+    } else {
+      MPI_Intercomm_create(intra_comm, 0, MPI_COMM_WORLD, 0, 0, &inter_comm);
+    }
+
+    int val;
+    if (global_rank == 0) {
+      // change rank of root in group a to 1?
+      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
+    } else if (global_rank == 1) {
+      val = 100;
+      MPI_Bcast(&val, 1, MPI_INT, MPI_ROOT, inter_comm);
+    } else {
+      MPI_Bcast(&val, 1, MPI_INT, MPI_PROC_NULL, inter_comm);
+    }
+
+    std::cout << "Global rank: " << global_rank << " val: " << val << "\n";
+    
+    MPI_Comm_free(&intra_comm);
+    MPI_Comm_free(&inter_comm);
 
     /*
     unsigned char number_colors = 2;
