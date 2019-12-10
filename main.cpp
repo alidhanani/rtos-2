@@ -8,7 +8,15 @@ int main(int argc, char** argv) {
     if (MPI_SUCCESS != MPI_Init(&argc, &argv)) {
       throw std::runtime_error("Unable to init mpi");
     }
+
+    int rank;
+    int num_processes;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_processes);
     
+    std::cout << "Very cool " << rank << " - " << num_processes << "\n";
+
+    /*
     unsigned char number_colors = 2;
     unsigned int number_spaces = 4;
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
@@ -29,6 +37,7 @@ int main(int argc, char** argv) {
       guesser.report_guess({guess.value(), response});
     } while (response.perfect != number_spaces);
     std::cout << "Found correct value\n";
+    */
   } catch (const std::runtime_error& error) {
     std::cout << "Received unexpected error:\n";
     std::cout << error.what();
