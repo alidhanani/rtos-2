@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
     std::cout << error.what();
     return 1;
   }
+  MPI_Finalize();
   return 0;
 }
 
