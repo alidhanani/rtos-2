@@ -5,62 +5,38 @@
 
 int main(int argc, char** argv) {
   try {
-    if (MPI_SUCCESS != MPI_Init(&argc, &argv)) {
-      throw std::runtime_error("Unable to init mpi");
-    }
-
+    MPI_Init(&argc, &argv);
     int global_rank;
     int global_num_processes;
     MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
 
-    int color;
-    MPI_Comm intra_comm;
-    if (global_rank == 0) {
-      // This is the master node
-      color = 0;
-      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &intra_comm);
-    } else {
-      color = 1;
-      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &intra_comm);
-    }
-    int local_rank;
-    int local_num_processes;
-    MPI_Comm_rank(intra_comm, &local_rank);
-    MPI_Comm_size(intra_comm, &local_num_processes);
-    std::cout << "Cool -"
-              << " Global rank: " << global_rank
-              << " Global num processes: " << global_num_processes
-              << " local rank: " << local_rank
-              << " local num processes: " << local_num_processes
-              << "\n";
-
-    MPI_Comm inter_comm;
-    if (global_rank == 0) {
-      MPI_Intercomm_create(intra_comm, 0, MPI_COMM_WORLD, 1, 0, &inter_comm);
-    } else {
-      MPI_Intercomm_create(intra_comm, 0, MPI_COMM_WORLD, 0, 0, &inter_comm);
-    }
-
-    int val;
-    if (global_rank == 0) {
-      // change rank of root in group a to 1?
-      val = 100;
-      MPI_Bcast(&val, 1, MPI_INT, MPI_ROOT, inter_comm);
-    } else if (global_rank == 1) {
-      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
-    } else {
-      MPI_Bcast(&val, 1, MPI_INT, 0, inter_comm);
-    }
-
-    std::cout << "Global rank: " << global_rank << " val: " << val << "\n";
-    
-    MPI_Comm_free(&intra_comm);
-    MPI_Comm_free(&inter_comm);
-
-    /*
+    // TODO: Make this configurable
     unsigned char number_colors = 2;
     unsigned int number_spaces = 4;
+    int tag = 0;
+    
+    if (global_rank == 0) {
+      // This node is a game master
+
+      // Receive message from each computing node
+      std::vector<int> responses(global_num_processes - 1);
+      for (int i = 1; i < global_num_processes; i++) {
+        int val;
+        MPI_Status status;
+        MPI_Recv(&val, 1, MPI_INT, i, tag, MPI_COMM_WORLD, &status);
+        responses[i - 1] = val;
+      }
+
+      for (int response : responses) {
+        std::cout << "Received response: " << response << "\n";
+      }
+    } else {
+      // This node is a computing node
+      MPI_Send(&global_rank, 1, MPI_INT, 0, tag, MPI_COMM_WORLD);
+    }
+    
+    /*
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
     std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
     Guesser guesser {0, 1, number_colors, number_spaces};
