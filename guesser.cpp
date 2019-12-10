@@ -14,6 +14,8 @@ void Guesser::report_guess(const guess guess) {
   previous_guesses.push_back(guess);
 }
 
+// TODO: Delete
+/*
 std::optional<ColorSequence> Guesser::generate_plausible_guess() {
   while (current_guess.has_value() && !is_plausible_guess(current_guess.value())) {
     current_guess = (current_guess.value() + number_nodes);
@@ -28,6 +30,7 @@ std::optional<ColorSequence> Guesser::generate_plausible_guess() {
 
   return guess;
 }
+*/
 
 bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
   for (const guess& guess : previous_guesses) {
