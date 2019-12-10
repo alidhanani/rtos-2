@@ -9,12 +9,32 @@ int main(int argc, char** argv) {
       throw std::runtime_error("Unable to init mpi");
     }
 
-    int rank;
-    int num_processes;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_processes);
-    
-    std::cout << "Very cool " << rank << " - " << num_processes << "\n";
+    int global_rank;
+    int global_num_processes;
+    MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
+
+    int color;
+    MPI_Comm comm;
+    if (global_rank == 0) {
+      // This is the master node
+      color = 0;
+      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &comm);
+    } else {
+      color = 1;
+      MPI_Comm_split(MPI_COMM_WORLD, color, 0, &comm);
+    }
+    int local_rank;
+    int local_num_processes;
+    MPI_Comm_rank(comm, &local_rank);
+    MPI_Comm_size(comm, &local_num_processes);
+    std::cout << "Cool -"
+              << " Global rank: " << global_rank
+              << " Global num processes: " << global_num_processes
+              << " local rank: " << local_rank
+              << " local num processes: " << local_num_processes
+              << "\n";
+    MPI_Comm_free(&comm);
 
     /*
     unsigned char number_colors = 2;
