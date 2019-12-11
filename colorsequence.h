@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <vector>
 #include <initializer_list>
 #include <iterator>
@@ -17,10 +19,6 @@ class ColorSequence {
   std::string pretty_print() const;
   static util::response compare(const ColorSequence&, const ColorSequence&);
  private:
-};
-
-// TODO: Put in a namespace?
-struct guess {
-  const ColorSequence color_sequence;
-  const util::response r;
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive &, const unsigned int);
 };

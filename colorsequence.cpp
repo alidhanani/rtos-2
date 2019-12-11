@@ -66,3 +66,9 @@ util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequ
   color_only -= perfect;
   return util::response {perfect, color_only}; 
 }
+
+template<class Archive>
+void ColorSequence::serialize(Archive & ar, const unsigned int version) {
+  ar & seq;
+  ar & number_colors;
+}
