@@ -14,27 +14,22 @@ void report_response(const ColorSequence&, util::response, MPI_Datatype);
 int main(int argc, char** argv) {
   try {
     mpi::environment env;
-    
-    int global_rank;
-    int global_num_processes;
-    MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
-
-    if (global_rank == 0) {
-      std::cout << "Starting master " << global_rank << "\n";
+    mpi::communicator world;
+    if (world.rank() == 0) {
+      std::cout << "Starting master " << world.rank() << std::endl;
       run_gamemaster(messages::proposed_guess_type(),
                      messages::guess_response_type());
     } else {
-      std::cout << "Starting guesser " << global_rank - 1 << "\n";
-      run_guesser(global_rank - 1,
-                  global_num_processes - 1,
+      std::cout << "Starting guesser " << world.rank() - 1 << std::endl;
+      run_guesser(world.rank() - 1,
+                  world.size() - 1,
                   messages::proposed_guess_type(),
                   messages::guess_response_type());
     }
 
-    std::cout << "Thread " << global_rank << " signing off!\n";
+    std::cout << "Thread " << world.rank() << " signing off!" << std::endl;
   } catch (const std::runtime_error& error) {
-    std::cout << "Received unexpected error:\n";
+    std::cout << "Received unexpected error:" << std::endl;
     std::cout << error.what();
     return 1;
   }
@@ -44,7 +39,7 @@ int main(int argc, char** argv) {
 
 void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_response) {
   GameMaster master = GameMaster::with_random_solution(util::number_spaces, util::number_colors);
-  std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
+  std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
     
   util::response response;
   int guess_number = 0;
@@ -53,7 +48,7 @@ void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_resp
     MPI_Recv(&proposed_guess, 1, mpi_proposed_guess, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     if (proposed_guess.guess_number != guess_number) {
       // Ignore the proposed_guess since it is outdated
-      std::cout << "Ignoring outdated guess\n";
+      std::cout << "Ignoring outdated guess" << std::endl;
       continue;
     }
 
@@ -71,7 +66,7 @@ void report_response(const ColorSequence& guess, util::response response, MPI_Da
     << guess.pretty_print()
     << " perfect: " << response.perfect
     << " color_only: " << response.color_only
-    << "\n";
+    << std::endl;
 
   messages::guess_response res = {response.perfect, response.color_only, {}};
   // TODO: There must be a better way
@@ -94,14 +89,14 @@ void run_guesser(unsigned int id,
     
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
-      std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << "\n";
+      std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << std::endl;
       int received_update;
       MPI_Iprobe(0, 0, MPI_COMM_WORLD, &received_update, MPI_STATUS_IGNORE);
       if (received_update) {
         messages::guess_response res;
         MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
         if (res.perfect == util::number_spaces) {
-          std::cout << "Guesser " << id << " done. Other node found answer.\n";
+          std::cout << "Guesser " << id << " done. Other node found answer." << std::endl;
           return;
         }
         guess guess = messages::convert_guess_response(res);
@@ -113,7 +108,7 @@ void run_guesser(unsigned int id,
 
     // guesser.current_gues is now empty or plausible
     if (!guesser.current_guess.has_value()) {
-      std::cout << "Guesser " << id << " done. Exhausted all options.\n";
+      std::cout << "Guesser " << id << " done. Exhausted all options." << std::endl;
       return;
     }
 
@@ -129,7 +124,7 @@ void run_guesser(unsigned int id,
     messages::guess_response res;
     MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
     if (res.perfect == util::number_spaces) {
-      std::cout << "Guesser " << id << " done. I had just made a guess.\n";
+      std::cout << "Guesser " << id << " done. I had just made a guess." << std::endl;
       return;
     }
     guess guess = messages::convert_guess_response(res);
