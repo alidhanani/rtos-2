@@ -12,7 +12,7 @@ class Guesser {
  public:
   void report_guess(const guess);
   Guesser(unsigned int,unsigned int, unsigned char, unsigned int);
-  std::optional<ColorSequence> generate_plausible_guess();
+
  private:
   const unsigned int id;
   const unsigned int number_nodes;
