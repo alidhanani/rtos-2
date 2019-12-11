@@ -2,6 +2,7 @@
 #include <iostream>
 #include "gamemaster.h"
 #include "guesser.h"
+#include "messages.h"
 
 int main(int argc, char** argv) {
   try {
@@ -11,31 +12,40 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
 
-    // TODO: Make this configurable
-    unsigned char number_colors = 2;
-    unsigned int number_spaces = 4;
     int tag = 0;
-    
+
+    MPI_Datatype mpi_proposed_guess = messages::proposed_guess_type();
     if (global_rank == 0) {
       // This node is a game master
 
       // Receive message from each computing node
-      std::vector<int> responses(global_num_processes - 1);
+      std::vector<messages::proposed_guess> responses(global_num_processes - 1);
       for (int i = 1; i < global_num_processes; i++) {
-        int val;
+        messages::proposed_guess val;
         MPI_Status status;
-        MPI_Recv(&val, 1, MPI_INT, i, tag, MPI_COMM_WORLD, &status);
+        MPI_Recv(&val, 1, mpi_proposed_guess, i, tag, MPI_COMM_WORLD, &status);
         responses[i - 1] = val;
       }
 
-      for (int response : responses) {
-        std::cout << "Received response: " << response << "\n";
+      for (messages::proposed_guess response : responses) {
+        std::cout << "Received guess: " << response.guess_number << " - ";
+        for (int i=0; i < util::number_spaces; i++) {
+          if (i == response.guess[i]) {
+            std::cout << "ok";
+          }
+          std::cout << response.guess[i] + 97;
+        }
+        std::cout <<  "\n";
       }
     } else {
       // This node is a computing node
-      MPI_Send(&global_rank, 1, MPI_INT, 0, tag, MPI_COMM_WORLD);
+      messages::proposed_guess val = {100, {0,1,2,3}};
+      MPI_Send(&val, 1, mpi_proposed_guess, 0, tag, MPI_COMM_WORLD);
     }
-    
+
+    unsigned char foo[] = {0,1,2,3};
+    std::cout << foo[1];
+
     /*
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
     std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
