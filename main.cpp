@@ -1,89 +1,73 @@
 #include <mpi.h>
 #include <iostream>
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#include <boost/mpi/collectives.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
-#include "messages.h"
+#include "proposedguess.h"
+#include "respondedguess.h"
+namespace mpi = boost::mpi;
 
-void run_gamemaster(MPI_Datatype, MPI_Datatype);
-void run_guesser(unsigned int, unsigned int, MPI_Datatype, MPI_Datatype);
-void report_response(const ColorSequence&, util::response, MPI_Datatype);
+void run_gamemaster(mpi::communicator world);
+void run_guesser(mpi::communicator world, unsigned int, unsigned int);
+void report_response(mpi::communicator world, RespondedGuess);
 
 int main(int argc, char** argv) {
   try {
-    MPI_Init(&argc, &argv);
-    int global_rank;
-    int global_num_processes;
-    MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &global_num_processes);
-
-    if (global_rank == 0) {
-      std::cout << "Starting master " << global_rank << "\n";
-      run_gamemaster(messages::proposed_guess_type(),
-                     messages::guess_response_type());
+    mpi::environment env;
+    mpi::communicator world;
+    if (world.rank() == 0) {
+      std::cout << "Starting master " << world.rank() << std::endl;
+      run_gamemaster(world);
     } else {
-      std::cout << "Starting guesser " << global_rank - 1 << "\n";
-      run_guesser(global_rank - 1,
-                  global_num_processes - 1,
-                  messages::proposed_guess_type(),
-                  messages::guess_response_type());
+      std::cout << "Starting guesser " << world.rank() - 1 << std::endl;
+      run_guesser(world, world.rank() - 1, world.size() - 1);
     }
 
-    std::cout << "Thread " << global_rank << " signing off!\n";
+    std::cout << "Thread " << world.rank() << " signing off!" << std::endl;
   } catch (const std::runtime_error& error) {
-    std::cout << "Received unexpected error:\n";
+    std::cout << "Received unexpected error:" << std::endl;
     std::cout << error.what();
     return 1;
   }
 
-  MPI_Finalize();
   return 0;
 }
 
-void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_response) {
+void run_gamemaster(mpi::communicator world) {
   GameMaster master = GameMaster::with_random_solution(util::number_spaces, util::number_colors);
-  std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
+  std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
     
-  util::response response;
+  RespondedGuess response;
   int guess_number = 0;
   do {
-    messages::proposed_guess proposed_guess;
-    MPI_Recv(&proposed_guess, 1, mpi_proposed_guess, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    ProposedGuess proposed_guess;
+    world.recv(mpi::any_source, 0, proposed_guess);
+    std::cout << "Received proposed guess: " << proposed_guess.guess_number << std::endl;
     if (proposed_guess.guess_number != guess_number) {
       // Ignore the proposed_guess since it is outdated
-      std::cout << "Ignoring outdated guess\n";
+      std::cout << "Ignoring outdated guess" << std::endl;
       continue;
     }
 
-    std::vector<unsigned char> seq {std::begin(proposed_guess.guess), std::end(proposed_guess.guess)};
-    ColorSequence color_seq = {util::number_colors,seq};
-    response = master.evaluate_guess(color_seq);
-    report_response(color_seq, response, mpi_guess_response);
+    response = master.evaluate_guess(proposed_guess.color_sequence);
+    report_response(world, response);
     guess_number++;
   } while (response.perfect != util::number_spaces);
 }
 
-void report_response(const ColorSequence& guess, util::response response, MPI_Datatype mpi_guess_response) {
-  // report response to user
+void report_response(mpi::communicator world, RespondedGuess response) {
   std::cout
-    << guess.pretty_print()
+    << response.color_sequence.pretty_print()
     << " perfect: " << response.perfect
     << " color_only: " << response.color_only
-    << "\n";
+    << std::endl;
 
-  messages::guess_response res = {response.perfect, response.color_only, {}};
-  // TODO: There must be a better way
-  // https://stackoverflow.com/questions/46212366/c-gives-strange-error-during-structure-initialization-with-an-array-inside
-  for (int i = 0; i < guess.seq.size(); i++) {
-    res.guess[i] = guess.seq[i];
-  }
-  MPI_Bcast(&res, 1, mpi_guess_response, 0, MPI_COMM_WORLD);
+  broadcast(world, response, 0);
 }
 
-void run_guesser(unsigned int id,
-                 unsigned int number_guessers,
-                 MPI_Datatype mpi_proposed_guess,
-                 MPI_Datatype mpi_guess_response) {
-  
+void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_guessers) {
   Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
   int guess_number = 0;
   
@@ -91,18 +75,16 @@ void run_guesser(unsigned int id,
     
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
-      std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << "\n";
-      int received_update;
-      MPI_Iprobe(0, 0, MPI_COMM_WORLD, &received_update, MPI_STATUS_IGNORE);
-      if (received_update) {
-        messages::guess_response res;
-        MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-        if (res.perfect == util::number_spaces) {
-          std::cout << "Guesser " << id << " done. Other node found answer.\n";
+      std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << std::endl;
+      if (world.iprobe().has_value()) {
+        RespondedGuess responded_guess;
+        broadcast(world, responded_guess, 0);
+        if (responded_guess.perfect == util::number_spaces) {
+          std::cout << "Guesser " << id
+                    << " done. Other node found answer." << std::endl;
           return;
         }
-        guess guess = messages::convert_guess_response(res);
-        guesser.report_guess(guess);
+        guesser.report_guess(responded_guess);
       }
       
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
@@ -110,28 +92,24 @@ void run_guesser(unsigned int id,
 
     // guesser.current_gues is now empty or plausible
     if (!guesser.current_guess.has_value()) {
-      std::cout << "Guesser " << id << " done. Exhausted all options.\n";
+      std::cout << "Guesser " << id << " done. Exhausted all options." << std::endl;
       return;
     }
 
     // guesser.current_guess is plausible, let's report it
-    messages::proposed_guess val = {guess_number, {}};
-    // TODO: There must be a better way
-    for (int i = 0; i < guesser.current_guess.value().seq.size(); i++) {
-      val.guess[i] = guesser.current_guess.value().seq[i];
-    }
-    MPI_Send(&val, 1, mpi_proposed_guess, 0, 0, MPI_COMM_WORLD);
+    ProposedGuess proposed_guess = {guess_number, guesser.current_guess.value()};
+    world.send(0, 0, proposed_guess);
 
     // The master node will respond
-    messages::guess_response res;
-    MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-    if (res.perfect == util::number_spaces) {
-      std::cout << "Guesser " << id << " done. I had just made a guess.\n";
+    RespondedGuess responded_guess;
+    broadcast(world, responded_guess, 0);
+    if (responded_guess.perfect == util::number_spaces) {
+      std::cout << "Guesser " << id
+                << " done. I had just made a guess." << std::endl;
       return;
     }
-    guess guess = messages::convert_guess_response(res);
-    guesser.report_guess(guess);
-    if (guess.color_sequence.seq == guesser.current_guess.value().seq) {
+    guesser.report_guess(responded_guess);
+    if (responded_guess.color_sequence.seq == guesser.current_guess.value().seq) {
       // Our guess was used, so we should move to the next one
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
     }

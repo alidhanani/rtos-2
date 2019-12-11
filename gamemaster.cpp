@@ -14,6 +14,7 @@ GameMaster GameMaster::with_random_solution(unsigned int num_spaces, unsigned ch
 
 GameMaster::GameMaster(ColorSequence solution) :solution(solution) {}
 
-util::response GameMaster::evaluate_guess(const ColorSequence& guess) {
-  return ColorSequence::compare(guess, solution);
+RespondedGuess GameMaster::evaluate_guess(const ColorSequence& guess) {
+  util::response res = ColorSequence::compare(guess, solution);
+  return {res.perfect, res.color_only, guess};
 }

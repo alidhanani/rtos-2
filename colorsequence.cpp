@@ -3,6 +3,8 @@
 ColorSequence::ColorSequence(unsigned char number_colors, std::vector<unsigned char> seq)
   :seq(seq), number_colors(number_colors) {}
 
+ColorSequence::ColorSequence() {}
+
 std::optional<ColorSequence> ColorSequence::operator+(unsigned int incr) {
   std::vector<unsigned char> new_seq(seq.size());
   unsigned char carry = 0;
@@ -66,3 +68,4 @@ util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequ
   color_only -= perfect;
   return util::response {perfect, color_only}; 
 }
+
