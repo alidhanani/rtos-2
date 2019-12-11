@@ -127,14 +127,33 @@ void report_response(const ColorSequence& guess, util::response response, MPI_Da
   MPI_Bcast(&res, 1, mpi_guess_response, 0, MPI_COMM_WORLD);
 }
 
-void run_guesser(unsigned int id, unsigned int number_guessers, MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_response) {
-  Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
+void run_guesser(unsigned int id,
+                 unsigned int number_guessers,
+                 MPI_Datatype mpi_proposed_guess,
+                 MPI_Datatype mpi_guess_response) {
   
-  util::response response;
+  Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
   int guess_number = 0;
-  do {
+  
+  while (true) {
     
+    while (guesser.current_guess.has_value()
+           && !guesser.is_plausible_guess(guesser.current_guess.value())) {
+      int received_update; // TODO: Can we use a bool here? Should be false
+      MPI_Iprobe(0, 0, MPI_COMM_WORLD, &received_update, MPI_STATUS_IGNORE);
+      if (received_update) {
+        messages::guess_response res;
+        MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
+        if (res.perfect == util::number_spaces) {
+          return;
+        }
+        guesser::guess guess {std::vector<un>}
+        guesser.report_guess();
+      }
+      
+      guesser.current_guess = (guesser.current_guess.value() + util::number_nodes);
+    }
     
     guess_number++;
-  } while (response.perfect != util::number_spaces);
+  };
 }

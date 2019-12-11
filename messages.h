@@ -16,5 +16,7 @@ namespace messages {
   MPI_Datatype proposed_guess_type();
 
   MPI_Datatype guess_response_type();
+
+  util::guess convert_guess_response(guess_response);
 }
 

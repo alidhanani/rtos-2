@@ -31,4 +31,8 @@ namespace messages {
     MPI_Type_commit(&mpi_guess_response);
     return mpi_guess_response;
   }
+
+  util::guess convert_guess_response(guess_response) {
+    
+  }
 }
