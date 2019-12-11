@@ -4,11 +4,13 @@
 #include <boost/mpi/communicator.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
+#include "proposedguess.h"
+#include "respondedguess.h"
 namespace mpi = boost::mpi;
 
-void run_gamemaster(MPI_Datatype, MPI_Datatype);
-void run_guesser(unsigned int, unsigned int, MPI_Datatype, MPI_Datatype);
-void report_response(const ColorSequence&, util::response, MPI_Datatype);
+void run_gamemaster();
+void run_guesser(unsigned int, unsigned int);
+void report_response(const RespondedGuess&);
 
 int main(int argc, char** argv) {
   try {
@@ -16,14 +18,10 @@ int main(int argc, char** argv) {
     mpi::communicator world;
     if (world.rank() == 0) {
       std::cout << "Starting master " << world.rank() << std::endl;
-      run_gamemaster(messages::proposed_guess_type(),
-                     messages::guess_response_type());
+      run_gamemaster();
     } else {
       std::cout << "Starting guesser " << world.rank() - 1 << std::endl;
-      run_guesser(world.rank() - 1,
-                  world.size() - 1,
-                  messages::proposed_guess_type(),
-                  messages::guess_response_type());
+      run_guesser(world.rank() - 1, world.size() - 1);
     }
 
     std::cout << "Thread " << world.rank() << " signing off!" << std::endl;
@@ -36,7 +34,7 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_response) {
+void run_gamemaster() {
   GameMaster master = GameMaster::with_random_solution(util::number_spaces, util::number_colors);
   std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
     
@@ -59,28 +57,17 @@ void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_resp
   } while (response.perfect != util::number_spaces);
 }
 
-void report_response(const ColorSequence& guess, util::response response, MPI_Datatype mpi_guess_response) {
-  // report response to user
+void report_response(const RespondedGuess& response) {
   std::cout
-    << guess.pretty_print()
+    << response.color_sequence.pretty_print()
     << " perfect: " << response.perfect
     << " color_only: " << response.color_only
     << std::endl;
 
-  messages::guess_response res = {response.perfect, response.color_only, {}};
-  // TODO: There must be a better way
-  // https://stackoverflow.com/questions/46212366/c-gives-strange-error-during-structure-initialization-with-an-array-inside
-  for (int i = 0; i < guess.seq.size(); i++) {
-    res.guess[i] = guess.seq[i];
-  }
   MPI_Bcast(&res, 1, mpi_guess_response, 0, MPI_COMM_WORLD);
 }
 
-void run_guesser(unsigned int id,
-                 unsigned int number_guessers,
-                 MPI_Datatype mpi_proposed_guess,
-                 MPI_Datatype mpi_guess_response) {
-  
+void run_guesser(unsigned int id, unsigned int number_guessers) {
   Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
   int guess_number = 0;
   
