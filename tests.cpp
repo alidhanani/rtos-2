@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "guesser.h"
+#include "colorsequence.h"
 
 TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
   const unsigned char num_colors = 5;
