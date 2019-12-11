@@ -30,10 +30,7 @@ int main(int argc, char** argv) {
       for (messages::proposed_guess response : responses) {
         std::cout << "Received guess: " << response.guess_number << " - ";
         for (int i=0; i < util::number_spaces; i++) {
-          if (i == response.guess[i]) {
-            std::cout << "ok";
-          }
-          std::cout << response.guess[i] + 97;
+          std::cout << static_cast<int>(response.guess[i]);
         }
         std::cout <<  "\n";
       }
@@ -43,9 +40,9 @@ int main(int argc, char** argv) {
       MPI_Send(&val, 1, mpi_proposed_guess, 0, tag, MPI_COMM_WORLD);
     }
 
-    unsigned char foo[] = {0,1,2,3};
-    std::cout << foo[1];
-
+    MPI_Datatype mpi_guess_response = messages::guess_response_type();
+    if (int i = 1)
+    
     /*
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
     std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
