@@ -6,6 +6,8 @@
 
 class RespondedGuess {
  public:
+  RespondedGuess(unsigned int, unsigned int, ColorSequence);
+  RespondedGuess();
   unsigned int perfect;
   unsigned int color_only;
   ColorSequence color_sequence;

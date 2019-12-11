@@ -2,6 +2,7 @@
 #include <iostream>
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
+#include <boost/mpi/collectives.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
 #include "proposedguess.h"
@@ -75,17 +76,15 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
       std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << std::endl;
-      int received_update;
-      MPI_Iprobe(0, 0, MPI_COMM_WORLD, &received_update, MPI_STATUS_IGNORE);
-      if (received_update) {
-        messages::guess_response res;
-        MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-        if (res.perfect == util::number_spaces) {
-          std::cout << "Guesser " << id << " done. Other node found answer." << std::endl;
+      if (world.iprobe().has_value()) {
+        RespondedGuess responded_guess;
+        broadcast(world, response, 0);
+        if (responded_guess.perfect == util::number_spaces) {
+          std::cout << "Guesser " << id
+                    << " done. Other node found answer." << std::endl;
           return;
         }
-        guess guess = messages::convert_guess_response(res);
-        guesser.report_guess(guess);
+        guesser.report_guess(responded_guess);
       }
       
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
@@ -98,23 +97,19 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     }
 
     // guesser.current_guess is plausible, let's report it
-    messages::proposed_guess val = {guess_number, {}};
-    // TODO: There must be a better way
-    for (int i = 0; i < guesser.current_guess.value().seq.size(); i++) {
-      val.guess[i] = guesser.current_guess.value().seq[i];
-    }
-    MPI_Send(&val, 1, mpi_proposed_guess, 0, 0, MPI_COMM_WORLD);
+    ProposedGuess proposed_guess = {guess_number, guesser.current_guess.value()};
+    world.send(0, 0, proposed_guess);
 
     // The master node will respond
-    messages::guess_response res;
-    MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-    if (res.perfect == util::number_spaces) {
-      std::cout << "Guesser " << id << " done. I had just made a guess." << std::endl;
+    RespondedGuess responded_guess;
+    broadcast(world, response, 0);
+    if (responded_guess.perfect == util::number_spaces) {
+      std::cout << "Guesser " << id
+                << " done. I had just made a guess." << std::endl;
       return;
     }
-    guess guess = messages::convert_guess_response(res);
-    guesser.report_guess(guess);
-    if (guess.color_sequence.seq == guesser.current_guess.value().seq) {
+    guesser.report_guess(responded_guess);
+    if (responded_guess.color_sequence.seq == guesser.current_guess.value().seq) {
       // Our guess was used, so we should move to the next one
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
     }

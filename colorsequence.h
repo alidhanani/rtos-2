@@ -13,6 +13,7 @@
 class ColorSequence {
  public:
   ColorSequence(unsigned char, std::vector<unsigned char>);
+  ColorSequence();
   std::optional<ColorSequence> operator+(unsigned int);
   std::vector<unsigned char> seq;
   unsigned char number_colors;
