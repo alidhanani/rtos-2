@@ -46,15 +46,3 @@ TEST_CASE("Test color sequence addition", "[ColorSequence::operator+]") {
     REQUIRE(res.value().seq == std::vector<unsigned char> {1, 1, 1});
   }
 }
-
-TEST_CASE("Test guess generation", "[Guesser::generate_plausible_guess]") {
-  SECTION("No previous guesses") {
-    Guesser guesser {0, 2, 2, 3};
-    std::vector<unsigned char> expected {0, 0, 0};
-    REQUIRE(guesser.generate_plausible_guess().value().seq == expected);
-
-    // There are 2 nodes and 2 colors, so we should increment accordingly
-    std::vector<unsigned char> expected2 {0, 1, 0};
-    REQUIRE(guesser.generate_plausible_guess().value().seq == expected2);
-  }
-}

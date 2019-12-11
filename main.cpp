@@ -4,6 +4,10 @@
 #include "guesser.h"
 #include "messages.h"
 
+void run_gamemaster(MPI_Datatype, MPI_Datatype);
+void run_guesser(unsigned int, unsigned int, MPI_Datatype, MPI_Datatype);
+void report_response(const ColorSequence&, util::response, MPI_Datatype);
+
 int main(int argc, char** argv) {
   try {
     MPI_Init(&argc, &argv);
@@ -16,74 +20,11 @@ int main(int argc, char** argv) {
       run_gamemaster(messages::proposed_guess_type(),
                      messages::guess_response_type());
     } else {
-      run_guesser(messages::proposed_guess_type(),
+      run_guesser(global_rank - 1,
+                  global_num_processes - 1,
+                  messages::proposed_guess_type(),
                   messages::guess_response_type());
     }
-
-    int tag = 0;
-
-    MPI_Datatype mpi_proposed_guess = messages::proposed_guess_type();
-    if (global_rank == 0) {
-      // This node is a game master
-
-      // Receive message from each computing node
-      std::vector<messages::proposed_guess> responses(global_num_processes - 1);
-      for (int i = 1; i < global_num_processes; i++) {
-        messages::proposed_guess val;
-        MPI_Status status;
-        MPI_Recv(&val, 1, mpi_proposed_guess, i, tag, MPI_COMM_WORLD, &status);
-        responses[i - 1] = val;
-      }
-
-      for (messages::proposed_guess response : responses) {
-        std::cout << "Received guess: " << response.guess_number << " - ";
-        for (int i=0; i < util::number_spaces; i++) {
-          std::cout << static_cast<int>(response.guess[i]);
-        }
-        std::cout <<  "\n";
-      }
-    } else {
-      // This node is a computing node
-      messages::proposed_guess val = {100, {0,1,2,3}};
-      MPI_Send(&val, 1, mpi_proposed_guess, 0, tag, MPI_COMM_WORLD);
-    }
-
-    MPI_Datatype mpi_guess_response = messages::guess_response_type();
-    if (global_rank == 0) {
-      messages::guess_response res = {1,2,{0,1,2,3}};
-      MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-    } else {
-      messages::guess_response res;
-      MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
-      std::cout << global_rank << " - received response - "
-                << res.perfect << " - " << res.color_only << " - ";
-      for (int i=0; i < util::number_spaces; i++) {
-          std::cout << static_cast<int>(res.guess[i]);
-        }
-        std::cout <<  "\n";
-      
-    }
-    
-    /*
-    GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
-    std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
-    Guesser guesser {0, 1, number_colors, number_spaces};
-    util::response response;
-    do {
-      std::optional<ColorSequence> guess = guesser.generate_plausible_guess();
-      if (!guess.has_value()) {
-        std::cout << "Exausted all possible guesses\n";
-      }
-      response = master.evaluate_guess(guess.value());
-      std::cout
-        << guess.value().pretty_print()
-        << " perfect: " << response.perfect
-        << " color_only: " << response.color_only
-        << "\n";
-      guesser.report_guess({guess.value(), response});
-    } while (response.perfect != number_spaces);
-    std::cout << "Found correct value\n";
-    */
   } catch (const std::runtime_error& error) {
     std::cout << "Received unexpected error:\n";
     std::cout << error.what();
@@ -94,20 +35,21 @@ int main(int argc, char** argv) {
 }
 
 void run_gamemaster(MPI_Datatype mpi_proposed_guess, MPI_Datatype mpi_guess_response) {
-  GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
+  GameMaster master = GameMaster::with_random_solution(util::number_spaces, util::number_colors);
   std::cout << "Master using solution: " << master.solution.pretty_print() << "\n";
     
   util::response response;
   int guess_number = 0;
   do {
     messages::proposed_guess proposed_guess;
-    MPI_Recv(&proposed_guess, 1, mpi_proposed_guess, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&proposed_guess, 1, mpi_proposed_guess, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     if (proposed_guess.guess_number != guess_number) {
       // Ignore the proposed_guess since it is outdated
       continue;
     }
 
-    ColorSequence color_seq = {util::number_colors,std::vector(proposed_guess.guess)};
+    std::vector<unsigned char> seq {std::begin(proposed_guess.guess), std::end(proposed_guess.guess)};
+    ColorSequence color_seq = {util::number_colors,seq};
     response = master.evaluate_guess(color_seq);
     report_response(color_seq, response, mpi_guess_response);
     guess_number++;
@@ -122,8 +64,12 @@ void report_response(const ColorSequence& guess, util::response response, MPI_Da
     << " color_only: " << response.color_only
     << "\n";
 
-  unsigned char seq[] = &(guess.seq[0]);
-  messages::guess_response res = {response.perfect, response.color_only, seq};
+  messages::guess_response res = {response.perfect, response.color_only, {}};
+  // TODO: There must be a better way
+  // https://stackoverflow.com/questions/46212366/c-gives-strange-error-during-structure-initialization-with-an-array-inside
+  for (unsigned char i : guess.seq) {
+    res.guess[i] = guess.seq[i];
+  }
   MPI_Bcast(&res, 1, mpi_guess_response, 0, MPI_COMM_WORLD);
 }
 
@@ -147,11 +93,11 @@ void run_guesser(unsigned int id,
         if (res.perfect == util::number_spaces) {
           return;
         }
-        guess guess = messagess::convert_guess_response(res);
+        guess guess = messages::convert_guess_response(res);
         guesser.report_guess(guess);
       }
       
-      guesser.current_guess = (guesser.current_guess.value() + util::number_nodes);
+      guesser.current_guess = (guesser.current_guess.value() + number_guessers);
     }
 
     
