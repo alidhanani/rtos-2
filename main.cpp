@@ -41,7 +41,20 @@ int main(int argc, char** argv) {
     }
 
     MPI_Datatype mpi_guess_response = messages::guess_response_type();
-    if (int i = 1)
+    if (global_rank == 0) {
+      messages::guess_response res = {1,2,{0,1,2,3}};
+      MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
+    } else {
+      messages::guess_response res;
+      MPI_Bcast(&res,1,mpi_guess_response,0,MPI_COMM_WORLD);
+      std::cout << global_rank << " - received response - "
+                << res.perfect << " - " << res.color_only << " - ";
+      for (int i=0; i < util::number_spaces; i++) {
+          std::cout << static_cast<int>(res.guess[i]);
+        }
+        std::cout <<  "\n";
+      
+    }
     
     /*
     GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
