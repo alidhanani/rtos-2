@@ -4,7 +4,6 @@
 #include <boost/mpi/communicator.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
-#include "messages.h"
 namespace mpi = boost::mpi;
 
 void run_gamemaster(MPI_Datatype, MPI_Datatype);

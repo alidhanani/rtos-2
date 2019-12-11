@@ -4,7 +4,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include "colorsequence.h"
 
-class Guess {
+class RespondedGuess {
  public:
   unsigned int perfect;
   unsigned int color_only;
