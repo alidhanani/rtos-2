@@ -1,8 +1,11 @@
 #include <mpi.h>
 #include <iostream>
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
 #include "messages.h"
+namespace mpi = boost::mpi;
 
 void run_gamemaster(MPI_Datatype, MPI_Datatype);
 void run_guesser(unsigned int, unsigned int, MPI_Datatype, MPI_Datatype);
@@ -10,7 +13,8 @@ void report_response(const ColorSequence&, util::response, MPI_Datatype);
 
 int main(int argc, char** argv) {
   try {
-    MPI_Init(&argc, &argv);
+    mpi::environment env;
+    
     int global_rank;
     int global_num_processes;
     MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
@@ -35,7 +39,6 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  MPI_Finalize();
   return 0;
 }
 

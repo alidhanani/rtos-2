@@ -1,5 +1,6 @@
 CXX = mpiCC
 CXXFLAGS = -Wall -g -std=c++17
+LDLIBS = -lboost_mpi -lboost_serialization
 
 SRCS = gamemaster.cpp guesser.cpp util.cpp colorsequence.cpp messages.cpp
 OBJS = $(subst .cpp,.o,$(SRCS))
@@ -7,7 +8,7 @@ OBJS = $(subst .cpp,.o,$(SRCS))
 all: tests build
 
 build: main.o $(OBJS)
-	$(CXX) $(CXXFLAGS) -o mastermind main.o $(OBJS)
+	$(CXX) $(CXXFLAGS) -o mastermind main.o $(OBJS) $(LDLIBS)
 
 main.o: main.cpp gamemaster.h guesser.h messages.h
 
