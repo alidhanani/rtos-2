@@ -92,7 +92,7 @@ void run_guesser(unsigned int id,
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
       std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << "\n";
-      int received_update; // TODO: Can we use a bool here? Should be false
+      int received_update;
       MPI_Iprobe(0, 0, MPI_COMM_WORLD, &received_update, MPI_STATUS_IGNORE);
       if (received_update) {
         messages::guess_response res;
