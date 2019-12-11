@@ -18,3 +18,9 @@ class ColorSequence {
   static util::response compare(const ColorSequence&, const ColorSequence&);
  private:
 };
+
+// TODO: Put in a namespace?
+struct guess {
+  const ColorSequence color_sequence;
+  const util::response r;
+};

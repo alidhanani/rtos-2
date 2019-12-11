@@ -147,12 +147,14 @@ void run_guesser(unsigned int id,
         if (res.perfect == util::number_spaces) {
           return;
         }
-        guesser::guess guess {std::vector<un>}
-        guesser.report_guess();
+        guess guess = messagess::convert_guess_response(res);
+        guesser.report_guess(guess);
       }
       
       guesser.current_guess = (guesser.current_guess.value() + util::number_nodes);
     }
+
+    
     
     guess_number++;
   };

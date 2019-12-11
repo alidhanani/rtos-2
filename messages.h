@@ -1,5 +1,5 @@
 #include <mpi.h>
-#include "util.h"
+#include "colorsequence.h"
 
 namespace messages {
   struct proposed_guess {
@@ -17,6 +17,8 @@ namespace messages {
 
   MPI_Datatype guess_response_type();
 
-  util::guess convert_guess_response(guess_response);
+  // TODO: It's quite confusing having the guess, response, and guess_response types
+  // Merge some things and rename
+  guess convert_guess_response(guess_response);
 }
 

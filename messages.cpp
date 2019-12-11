@@ -32,7 +32,10 @@ namespace messages {
     return mpi_guess_response;
   }
 
-  util::guess convert_guess_response(guess_response) {
-    
+  guess convert_guess_response(guess_response) {
+    util::response resonse {guess_response.perfect, guess_response.color_only};
+    std::vector<unsigned char> seq(std::begin(guess_response), std::end(guess_response));
+    ColorSequence color_sequence {util::number_colors, seq}
+    return {response, color_sequence};
   }
 }

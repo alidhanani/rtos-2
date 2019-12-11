@@ -10,11 +10,12 @@ std::optional<ColorSequence> Guesser::get_first_guess(unsigned int id, unsigned 
   return zero + id;
 }
 
-void Guesser::report_guess(const util::guess guess) {
+void Guesser::report_guess(const guess guess) {
   previous_guesses.push_back(guess);
 }
 
 // TODO: Delete
+/*
 std::optional<ColorSequence> Guesser::generate_plausible_guess() {
   while (current_guess.has_value() && !is_plausible_guess(current_guess.value())) {
     current_guess = (current_guess.value() + number_nodes);
@@ -29,10 +30,10 @@ std::optional<ColorSequence> Guesser::generate_plausible_guess() {
 
   return guess;
 }
-
+*/
 
 bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
-  for (const util::guess& guess : previous_guesses) {
+  for (const guess& guess : previous_guesses) {
     if (!is_plausible_guess(guess, proposed_guess)) {
       return false;
     }
@@ -40,7 +41,7 @@ bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
   return true;
 }
 
-bool Guesser::is_plausible_guess(const util::guess& guess, const ColorSequence& proposed_guess) {
+bool Guesser::is_plausible_guess(const guess& guess, const ColorSequence& proposed_guess) {
   util::response response = ColorSequence::compare(guess.color_sequence, proposed_guess);
   return response.perfect == guess.r.perfect
     && response.color_only == guess.r.color_only;
