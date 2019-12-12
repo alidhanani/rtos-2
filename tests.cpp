@@ -2,26 +2,26 @@
 #include "catch.hpp"
 #include "colorsequence.h"
 
-TEST_CASE("Test color sequence comparison", "[util::compare_color_sequences]") {
+TEST_CASE("Test color sequence comparison", "[ColorSequence::compare]") {
   const unsigned char num_colors = 5;
   const ColorSequence seq1 {num_colors, std::vector<unsigned char> {0,1,1,2,3}};
 
   SECTION("Perfect guess") {
-    util::response r = ColorSequence::compare(seq1, seq1);
+    response r = ColorSequence::compare(seq1, seq1);
     REQUIRE(r.perfect == 5);
     REQUIRE(r.color_only == 0);
   }
   
   SECTION("Bad guess") {
     const ColorSequence seq2 {num_colors, std::vector<unsigned char> {4,4,4,4,4}};
-    util::response r = ColorSequence::compare(seq1, seq2);
+    response r = ColorSequence::compare(seq1, seq2);
     REQUIRE(r.perfect == 0);
     REQUIRE(r.color_only == 0);
   }
 
   SECTION("Ok guess") {
     const ColorSequence seq2 {num_colors, std::vector<unsigned char> {0,4,4,4,1}};
-    util::response r = ColorSequence::compare(seq1, seq2);
+    response r = ColorSequence::compare(seq1, seq2);
     REQUIRE(r.perfect == 1);
     REQUIRE(r.color_only == 1);
   }
