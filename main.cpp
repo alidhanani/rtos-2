@@ -75,7 +75,8 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
-      std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << std::endl;
+      std::cout << id << " with guess value "
+                << guesser.current_guess.value().pretty_print() << std::endl;
       if (world.iprobe().has_value()) {
         RespondedGuess responded_guess;
         broadcast(world, responded_guess, 0);
@@ -85,6 +86,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
           return;
         }
         guesser.report_guess(responded_guess);
+        guess_number++;
       }
       
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
@@ -109,11 +111,11 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
       return;
     }
     guesser.report_guess(responded_guess);
+    guess_number++;
     if (responded_guess.color_sequence.seq == guesser.current_guess.value().seq) {
       // Our guess was used, so we should move to the next one
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
     }
     
-    guess_number++;
   };
 }
