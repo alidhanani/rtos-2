@@ -8,8 +8,6 @@
 #include "respondedguess.h"
 namespace mpi = boost::mpi;
 
-void run_guesser(mpi::communicator world, unsigned int, unsigned int, unsigned int, unsigned char);
-
 int main(int argc, char** argv) {  
   unsigned int number_spaces;
   unsigned char number_colors;
@@ -35,7 +33,8 @@ int main(int argc, char** argv) {
         ::with_random_solution(number_spaces, number_colors, world);
       master.run();
     } else {
-      run_guesser(world, world.rank() - 1, world.size() - 1, number_spaces, number_colors);
+      Guesser guesser = {world, world.rank() - 1, world.size() - 1, number_colors, number_spaces};
+      guesser.run();
     }
   } catch (const std::runtime_error& error) {
     std::cout << "Received unexpected error:" << std::endl;
@@ -44,51 +43,4 @@ int main(int argc, char** argv) {
   }
 
   return 0;
-}
-
-void run_guesser(mpi::communicator world,
-                 unsigned int id,
-                 unsigned int number_guessers,
-                 unsigned int number_spaces,
-                 unsigned char number_colors) {
-  Guesser guesser = {id, number_guessers, number_colors, number_spaces};
-  
-  while (true) {
-    while (guesser.current_guess.has_value()
-           && !guesser.is_plausible_guess(guesser.current_guess.value())) {
-      if (world.iprobe(mpi::any_source, 0).has_value()) {
-        RespondedGuess responded_guess;
-        world.recv(0, 0, responded_guess);
-
-        if (responded_guess.perfect == number_spaces) {
-          return;
-        }
-        guesser.report_guess(responded_guess);
-      }
-      
-      guesser.current_guess = (guesser.current_guess.value() + number_guessers);
-    }
-    // guesser.current_gues is now empty or plausible
-    
-    if (!guesser.current_guess.has_value()) {
-      return;
-    }
-
-    // guesser.current_guess is plausible, let's report it
-    ProposedGuess proposed_guess = {guesser.guess_number(), guesser.current_guess.value()};
-    world.send(0, 0, proposed_guess);
-
-    // The master node will respond
-    RespondedGuess responded_guess;
-    world.recv(0, 0, responded_guess);
-    if (responded_guess.perfect == number_spaces) {
-      return;
-    }
-    guesser.report_guess(responded_guess);
-    if (responded_guess.color_sequence.seq == guesser.current_guess.value().seq) {
-      // Our guess was used, so we should move to the next one
-      guesser.current_guess = (guesser.current_guess.value() + number_guessers);
-    }
-    
-  };
 }
