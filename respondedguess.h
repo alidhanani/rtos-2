@@ -11,7 +11,11 @@ class RespondedGuess {
   unsigned int perfect;
   unsigned int color_only;
   ColorSequence color_sequence;
- private:
   friend class boost::serialization::access;
-  template<class Archive> void serialize(Archive &, const unsigned int);
+  template<class Archive> void serialize(Archive & ar, const unsigned int version) {
+    ar & perfect;
+    ar & color_only;
+    ar & color_sequence;
+  };
+private:
 };

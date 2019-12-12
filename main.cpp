@@ -11,7 +11,7 @@ namespace mpi = boost::mpi;
 
 void run_gamemaster(mpi::communicator world);
 void run_guesser(mpi::communicator world, unsigned int, unsigned int);
-void report_response(mpi::communicator world, const RespondedGuess&);
+void report_response(mpi::communicator world, RespondedGuess);
 
 int main(int argc, char** argv) {
   try {
@@ -57,7 +57,7 @@ void run_gamemaster(mpi::communicator world) {
   } while (response.perfect != util::number_spaces);
 }
 
-void report_response(mpi::communicator world, const RespondedGuess& response) {
+void report_response(mpi::communicator world, RespondedGuess response) {
   std::cout
     << response.color_sequence.pretty_print()
     << " perfect: " << response.perfect
@@ -78,7 +78,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
       std::cout << id << " with guess value " << guesser.current_guess.value().pretty_print() << std::endl;
       if (world.iprobe().has_value()) {
         RespondedGuess responded_guess;
-        broadcast(world, response, 0);
+        broadcast(world, responded_guess, 0);
         if (responded_guess.perfect == util::number_spaces) {
           std::cout << "Guesser " << id
                     << " done. Other node found answer." << std::endl;
@@ -102,7 +102,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
 
     // The master node will respond
     RespondedGuess responded_guess;
-    broadcast(world, response, 0);
+    broadcast(world, responded_guess, 0);
     if (responded_guess.perfect == util::number_spaces) {
       std::cout << "Guesser " << id
                 << " done. I had just made a guess." << std::endl;

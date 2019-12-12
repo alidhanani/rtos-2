@@ -10,5 +10,8 @@ class ProposedGuess {
   ColorSequence color_sequence;
  private:
   friend class boost::serialization::access;
-  template<class Archive> void serialize(Archive &, const unsigned int);
+  template<class Archive> void serialize(Archive & ar, const unsigned int version) {
+    ar & guess_number;
+    ar & color_sequence;
+  };
 };
