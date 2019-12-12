@@ -2,7 +2,6 @@
 #include <iostream>
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
-#include <boost/mpi/collectives.hpp>
 #include <boost/lexical_cast.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
@@ -51,7 +50,7 @@ int main(int argc, char** argv) {
 void run_gamemaster(mpi::communicator world,
                     unsigned int number_spaces,
                     unsigned char number_colors) {
-  GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
+  GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors, world);
   std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
     
   RespondedGuess response;
