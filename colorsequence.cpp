@@ -38,7 +38,7 @@ std::string ColorSequence::pretty_print() const {
   return solution_string;
 }
 
-util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequence& seq2) {
+response ColorSequence::compare(const ColorSequence& seq1, const ColorSequence& seq2) {
   if (seq1.seq.size() != seq2.seq.size()) {
     throw std::runtime_error("Cannot compare color sequences of different sizes");
   }
@@ -66,6 +66,6 @@ util::response ColorSequence::compare(const ColorSequence& seq1, const ColorSequ
   }
   
   color_only -= perfect;
-  return util::response {perfect, color_only}; 
+  return response {perfect, color_only}; 
 }
 

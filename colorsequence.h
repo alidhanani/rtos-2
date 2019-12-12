@@ -9,7 +9,11 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include "util.h"
+
+struct response {
+  unsigned int perfect;
+  unsigned int color_only;
+};
 
 class ColorSequence {
  public:  ColorSequence(unsigned char, std::vector<unsigned char>);
@@ -18,7 +22,7 @@ class ColorSequence {
   std::vector<unsigned char> seq;
   unsigned char number_colors;
   std::string pretty_print() const;
-  static util::response compare(const ColorSequence&, const ColorSequence&);
+  static response compare(const ColorSequence&, const ColorSequence&);
  private:
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive & ar, const unsigned int version) {

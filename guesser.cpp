@@ -28,7 +28,7 @@ bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
 }
 
 bool Guesser::is_plausible_guess(const RespondedGuess& guess, const ColorSequence& proposed_guess) {
-  util::response response = ColorSequence::compare(guess.color_sequence, proposed_guess);
+  response response = ColorSequence::compare(guess.color_sequence, proposed_guess);
   return response.perfect == guess.perfect
     && response.color_only == guess.color_only;
 }
