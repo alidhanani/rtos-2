@@ -63,8 +63,10 @@ void report_response(mpi::communicator world, RespondedGuess response) {
     << " perfect: " << response.perfect
     << " color_only: " << response.color_only
     << std::endl;
-
-  broadcast(world, response, 0);
+  
+  for (int i = 1, number_nodes = world.size(); i < number_nodes; i++) {
+    world.send(i, 0, response);
+  }
 }
 
 void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_guessers) {
@@ -75,10 +77,10 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
       std::cout << id << " with guess value "
                 << guesser.current_guess.value().pretty_print() << std::endl;
-      if (world.iprobe().has_value()) {
+      if (world.iprobe(mpi::any_source, 0).has_value()) {
         RespondedGuess responded_guess;
         std::cout << "beginning blocking read 1 - " << id << std::endl;
-        broadcast(world, responded_guess, 0);
+        world.recv(0, 0, responded_guess);
         std::cout << "finishing blocking read 1 - " << id << std::endl;
         if (responded_guess.perfect == util::number_spaces) {
           std::cout << "Guesser " << id
@@ -106,7 +108,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     // The master node will respond
     RespondedGuess responded_guess;
     std::cout << "beginning blocking read 2 - " << id << std::endl;
-    broadcast(world, responded_guess, 0);
+    world.recv(0, 0, responded_guess);
     std::cout << "finishing blocking read 2 - " << id << std::endl;
     if (responded_guess.perfect == util::number_spaces) {
       std::cout << "Guesser " << id
