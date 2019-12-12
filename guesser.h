@@ -23,6 +23,7 @@ class Guesser {
   const unsigned int number_spaces;
   std::optional<ColorSequence> current_guess;
 
+  std::optional<ColorSequence> generate_plausible_guess();
   void report_guess(const RespondedGuess);
   int guess_number();
   bool is_plausible_guess(const ColorSequence&);

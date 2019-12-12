@@ -20,27 +20,13 @@ std::optional<ColorSequence> Guesser::get_first_guess(unsigned int id, unsigned 
 
 void Guesser::run() {
   while (true) {
-    while (current_guess.has_value()
-           && !is_plausible_guess(current_guess.value())) {
-      if (world.iprobe(mpi::any_source, 0).has_value()) {
-        RespondedGuess responded_guess;
-        world.recv(0, 0, responded_guess);
-
-        if (responded_guess.perfect == number_spaces) {
-          return;
-        }
-        report_guess(responded_guess);
-      }
-      
-      current_guess = (current_guess.value() + number_nodes);
-    }
-    // guesser.current_gues is now empty or plausible
     
-    if (!current_guess.has_value()) {
+    std::optional<ColorSequence> plausible_guess = generate_plausible_guess();
+    if (!plausible_guess.has_value()) {
       return;
     }
 
-    // guesser.current_guess is plausible, let's report it
+    // Report guess to master node
     ProposedGuess proposed_guess = {guess_number(), current_guess.value()};
     world.send(0, 0, proposed_guess);
 
@@ -57,6 +43,25 @@ void Guesser::run() {
     }
     
   };
+}
+
+std::optional<ColorSequence> Guesser::generate_plausible_guess() {
+  while (current_guess.has_value()
+         && !is_plausible_guess(current_guess.value())) {
+    if (world.iprobe(mpi::any_source, 0).has_value()) {
+      RespondedGuess responded_guess;
+      world.recv(0, 0, responded_guess);
+      
+      if (responded_guess.perfect == number_spaces) {
+        return {};
+      }
+      report_guess(responded_guess);
+    }
+    
+    current_guess = (current_guess.value() + number_nodes);
+  }
+
+  return current_guess;
 }
 
 void Guesser::report_guess(const RespondedGuess guess) {
