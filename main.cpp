@@ -17,6 +17,12 @@ int main(int argc, char** argv) {
   try {
     mpi::environment env;
     mpi::communicator world;
+
+    if (world.size() == 1) {
+      std::cout << "Please use at least 2 processes when running the program" << std::endl;
+      return 1;
+    }
+    
     if (world.rank() == 0) {
       run_gamemaster(world);
     } else {
