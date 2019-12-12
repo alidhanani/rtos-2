@@ -5,13 +5,10 @@
 #include <boost/lexical_cast.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
-#include "proposedguess.h"
 #include "respondedguess.h"
 namespace mpi = boost::mpi;
 
-void run_gamemaster(mpi::communicator world, unsigned int, unsigned char);
 void run_guesser(mpi::communicator world, unsigned int, unsigned int, unsigned int, unsigned char);
-void report_response(mpi::communicator world, RespondedGuess);
 
 int main(int argc, char** argv) {  
   unsigned int number_spaces;
@@ -34,7 +31,9 @@ int main(int argc, char** argv) {
     }
     
     if (world.rank() == 0) {
-      run_gamemaster(world, number_spaces, number_colors);
+      GameMaster master = GameMaster
+        ::with_random_solution(number_spaces, number_colors, world);
+      master.run();
     } else {
       run_guesser(world, world.rank() - 1, world.size() - 1, number_spaces, number_colors);
     }
@@ -45,40 +44,6 @@ int main(int argc, char** argv) {
   }
 
   return 0;
-}
-
-void run_gamemaster(mpi::communicator world,
-                    unsigned int number_spaces,
-                    unsigned char number_colors) {
-  GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors, world);
-  std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
-    
-  RespondedGuess response;
-  int guess_number = 0;
-  do {
-    ProposedGuess proposed_guess;
-    world.recv(mpi::any_source, 0, proposed_guess);
-    if (proposed_guess.guess_number != guess_number) {
-      // Ignore the proposed_guess since it is outdated
-      continue;
-    }
-
-    response = master.evaluate_guess(proposed_guess.color_sequence);
-    report_response(world, response);
-    guess_number++;
-  } while (response.perfect != number_spaces);
-}
-
-void report_response(mpi::communicator world, RespondedGuess response) {
-  std::cout
-    << response.color_sequence.pretty_print()
-    << " perfect: " << response.perfect
-    << " color_only: " << response.color_only
-    << std::endl;
-  
-  for (int i = 1, number_nodes = world.size(); i < number_nodes; i++) {
-    world.send(i, 0, response);
-  }
 }
 
 void run_guesser(mpi::communicator world,

@@ -29,8 +29,8 @@ messages.o: messages.h util.h
 clean:
 	rm $(OBJS) main.o tests.o mastermind tests
 
-tests: tests.o $(OBJS)
-	$(CXX) $(CXXFLAGS) -o tests tests.o $(OBJS)
+tests: tests.o colorsequence.o util.o
+	$(CXX) $(CXXFLAGS) -o tests tests.o colorsequence.o util.o
 	./tests
 
 tests.o: tests.cpp catch.hpp
