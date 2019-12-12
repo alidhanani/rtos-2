@@ -14,6 +14,10 @@ void Guesser::report_guess(const RespondedGuess guess) {
   previous_guesses.push_back(guess);
 }
 
+int Guesser::guess_number() {
+  return previous_guesses.size();
+}
+
 bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
   for (const RespondedGuess& guess : previous_guesses) {
     if (!is_plausible_guess(guess, proposed_guess)) {

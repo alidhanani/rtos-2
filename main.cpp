@@ -69,7 +69,6 @@ void report_response(mpi::communicator world, RespondedGuess response) {
 
 void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_guessers) {
   Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
-  int guess_number = 0;
   
   while (true) {
     
@@ -86,7 +85,6 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
           return;
         }
         guesser.report_guess(responded_guess);
-        guess_number++;
       }
       
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);
@@ -99,7 +97,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     }
 
     // guesser.current_guess is plausible, let's report it
-    ProposedGuess proposed_guess = {guess_number, guesser.current_guess.value()};
+    ProposedGuess proposed_guess = {guesser.guess_number(), guesser.current_guess.value()};
     world.send(0, 0, proposed_guess);
 
     // The master node will respond
@@ -111,7 +109,6 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
       return;
     }
     guesser.report_guess(responded_guess);
-    guess_number++;
     if (responded_guess.color_sequence.seq == guesser.current_guess.value().seq) {
       // Our guess was used, so we should move to the next one
       guesser.current_guess = (guesser.current_guess.value() + number_guessers);

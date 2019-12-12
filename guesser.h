@@ -10,6 +10,7 @@ class Guesser {
   Guesser(unsigned int,unsigned int, unsigned char, unsigned int);
   bool is_plausible_guess(const ColorSequence&);
   std::optional<ColorSequence> current_guess;
+  int guess_number();
  private:
   const unsigned int id;
   const unsigned int number_nodes;
