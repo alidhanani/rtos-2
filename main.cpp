@@ -71,14 +71,15 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
   Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
   
   while (true) {
-    
     while (guesser.current_guess.has_value()
            && !guesser.is_plausible_guess(guesser.current_guess.value())) {
       std::cout << id << " with guess value "
                 << guesser.current_guess.value().pretty_print() << std::endl;
       if (world.iprobe().has_value()) {
         RespondedGuess responded_guess;
+        std::cout << "beginning blocking read 1 - " << id << std::endl;
         broadcast(world, responded_guess, 0);
+        std::cout << "finishing blocking read 1 - " << id << std::endl;
         if (responded_guess.perfect == util::number_spaces) {
           std::cout << "Guesser " << id
                     << " done. Other node found answer." << std::endl;
@@ -98,11 +99,15 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
 
     // guesser.current_guess is plausible, let's report it
     ProposedGuess proposed_guess = {guesser.guess_number(), guesser.current_guess.value()};
+    std::cout << "beginning blocking write 1 - " << id << std::endl;
     world.send(0, 0, proposed_guess);
+    std::cout << "finishing blocking write 1 - " << id << std::endl;
 
     // The master node will respond
     RespondedGuess responded_guess;
+    std::cout << "beginning blocking read 2 - " << id << std::endl;
     broadcast(world, responded_guess, 0);
+    std::cout << "finishing blocking read 2 - " << id << std::endl;
     if (responded_guess.perfect == util::number_spaces) {
       std::cout << "Guesser " << id
                 << " done. I had just made a guess." << std::endl;
