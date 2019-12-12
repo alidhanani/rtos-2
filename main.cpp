@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
     number_spaces = boost::lexical_cast<unsigned int>(argv[1]);
     number_colors = boost::lexical_cast<unsigned int>(argv[2]);
   } else {
-    number_spaces = 5;
-    number_colors = 3;
+    number_spaces = 4;
+    number_colors = 10;
   }
   
   try {
