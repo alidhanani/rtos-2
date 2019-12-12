@@ -9,11 +9,13 @@
 #include "respondedguess.h"
 namespace mpi = boost::mpi;
 
-void run_gamemaster(mpi::communicator world);
-void run_guesser(mpi::communicator world, unsigned int, unsigned int);
+void run_gamemaster(mpi::communicator world, unsigned int, unsigned char);
+void run_guesser(mpi::communicator world, unsigned int, unsigned int, unsigned int, unsigned char);
 void report_response(mpi::communicator world, RespondedGuess);
 
 int main(int argc, char** argv) {
+  unsigned int number_spaces = 4;
+  unsigned char number_colors = 2;
   try {
     mpi::environment env;
     mpi::communicator world;
@@ -24,9 +26,9 @@ int main(int argc, char** argv) {
     }
     
     if (world.rank() == 0) {
-      run_gamemaster(world);
+      run_gamemaster(world, number_spaces, number_colors);
     } else {
-      run_guesser(world, world.rank() - 1, world.size() - 1);
+      run_guesser(world, world.rank() - 1, world.size() - 1, number_spaces, number_colors);
     }
   } catch (const std::runtime_error& error) {
     std::cout << "Received unexpected error:" << std::endl;
@@ -37,8 +39,10 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-void run_gamemaster(mpi::communicator world) {
-  GameMaster master = GameMaster::with_random_solution(util::number_spaces, util::number_colors);
+void run_gamemaster(mpi::communicator world,
+                    unsigned int number_spaces,
+                    unsigned char number_colors) {
+  GameMaster master = GameMaster::with_random_solution(number_spaces, number_colors);
   std::cout << "Master using solution: " << master.solution.pretty_print() << std::endl;
     
   RespondedGuess response;
@@ -54,7 +58,7 @@ void run_gamemaster(mpi::communicator world) {
     response = master.evaluate_guess(proposed_guess.color_sequence);
     report_response(world, response);
     guess_number++;
-  } while (response.perfect != util::number_spaces);
+  } while (response.perfect != number_spaces);
 }
 
 void report_response(mpi::communicator world, RespondedGuess response) {
@@ -69,8 +73,12 @@ void report_response(mpi::communicator world, RespondedGuess response) {
   }
 }
 
-void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_guessers) {
-  Guesser guesser = {id, number_guessers, util::number_colors, util::number_spaces};
+void run_guesser(mpi::communicator world,
+                 unsigned int id,
+                 unsigned int number_guessers,
+                 unsigned int number_spaces,
+                 unsigned char number_colors) {
+  Guesser guesser = {id, number_guessers, number_colors, number_spaces};
   
   while (true) {
     while (guesser.current_guess.has_value()
@@ -79,7 +87,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
         RespondedGuess responded_guess;
         world.recv(0, 0, responded_guess);
 
-        if (responded_guess.perfect == util::number_spaces) {
+        if (responded_guess.perfect == number_spaces) {
           return;
         }
         guesser.report_guess(responded_guess);
@@ -100,7 +108,7 @@ void run_guesser(mpi::communicator world, unsigned int id, unsigned int number_g
     // The master node will respond
     RespondedGuess responded_guess;
     world.recv(0, 0, responded_guess);
-    if (responded_guess.perfect == util::number_spaces) {
+    if (responded_guess.perfect == number_spaces) {
       return;
     }
     guesser.report_guess(responded_guess);
