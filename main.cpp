@@ -3,6 +3,7 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <boost/mpi/collectives.hpp>
+#include <boost/lexical_cast.hpp>
 #include "gamemaster.h"
 #include "guesser.h"
 #include "proposedguess.h"
@@ -13,9 +14,17 @@ void run_gamemaster(mpi::communicator world, unsigned int, unsigned char);
 void run_guesser(mpi::communicator world, unsigned int, unsigned int, unsigned int, unsigned char);
 void report_response(mpi::communicator world, RespondedGuess);
 
-int main(int argc, char** argv) {
-  unsigned int number_spaces = 4;
-  unsigned char number_colors = 2;
+int main(int argc, char** argv) {  
+  unsigned int number_spaces;
+  unsigned char number_colors;
+  if (argc == 3) {
+    number_spaces = boost::lexical_cast<unsigned int>(argv[1]);
+    number_colors = boost::lexical_cast<unsigned int>(argv[2]);
+  } else {
+    number_spaces = 5;
+    number_colors = 3;
+  }
+  
   try {
     mpi::environment env;
     mpi::communicator world;
