@@ -23,6 +23,7 @@ void Guesser::run() {
     
     std::optional<ColorSequence> plausible_guess = generate_plausible_guess();
     if (!plausible_guess.has_value()) {
+      // The Guesser has exhausted its solution space, and can terminate
       return;
     }
 
@@ -48,6 +49,8 @@ void Guesser::run() {
 std::optional<ColorSequence> Guesser::generate_plausible_guess() {
   while (current_guess.has_value()
          && !is_plausible_guess(current_guess.value())) {
+
+    // Check for a message from the GameMaster
     if (world.iprobe(mpi::any_source, 0).has_value()) {
       RespondedGuess responded_guess;
       world.recv(0, 0, responded_guess);
@@ -57,7 +60,8 @@ std::optional<ColorSequence> Guesser::generate_plausible_guess() {
       }
       report_guess(responded_guess);
     }
-    
+
+    // Incremement to the next possible guess
     current_guess = (current_guess.value() + number_nodes);
   }
 
@@ -73,6 +77,7 @@ int Guesser::guess_number() {
 }
 
 bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
+  // Compare the proposed_guess against all previous guesses
   for (const RespondedGuess& guess : previous_guesses) {
     if (!is_plausible_guess(guess, proposed_guess)) {
       return false;
@@ -83,6 +88,7 @@ bool Guesser::is_plausible_guess(const ColorSequence& proposed_guess) {
 
 bool Guesser::is_plausible_guess(const RespondedGuess& guess, const ColorSequence& proposed_guess) {
   response response = ColorSequence::compare(guess.color_sequence, proposed_guess);
+  // Check if proposed_guess contradicts guess
   return response.perfect == guess.perfect
     && response.color_only == guess.color_only;
 }
